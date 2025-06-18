@@ -29,7 +29,7 @@ export default function TabLayout() {
           let iconName: any = 'home';
 
           if (route.name === 'home') iconName = 'home';
-          else if (route.name === 'classes') iconName = 'calendar';
+          else if (route.name === 'booking') iconName = 'calendar';
           else if (route.name === 'profile') iconName = 'user';
 
           return <Feather name={iconName} size={size} color={color} />;
@@ -43,9 +43,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="classes"
+        name="booking"
         options={{
-          tabBarLabel: 'Clases',
+          tabBarLabel: 'Reservar',
+          headerTitle: 'Reservar',
+          headerTitleStyle: { textAlign: 'left', color: '#78aaa9', fontWeight: 'bold', fontSize: 20},
         }}
       />
       <Tabs.Screen

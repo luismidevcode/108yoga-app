@@ -16,18 +16,25 @@ export default function HomeScreen() {
 
   const { user } = useUser();
   const [serviceName, setServiceName] = useState<string | null>(null);
+  const [serviceCount, setServiceCount] = useState<number | null>(null);
   //const [idserviceName, setIdServiceName] = useState<string | null>(null);
   const [serviceJson, setserviceJson] = useState<any>(null);
+  const [MembershipsJson, setMembershipsJson] = useState<any>(null);
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchMembership = async () => {
       if (user?.UniqueId) {
         try {
-          const memberships = await getMembershipsByClient('100015665');
+          const memberships = await getMembershipsByClient(String(user?.UniqueId), getStoredUserToken() ?? undefined);
           //setMembershipJson(memberships);
           if (memberships?.ClientMemberships?.length > 0) {
+
             const membership = memberships.ClientMemberships[0].Memberships[0];
+            setMembershipsJson(memberships);
+            console.log("Token:", getStoredUserToken());
+            console.log("Memberships fetched:", MembershipsJson);
+            console.log("Membership fetched:", memberships?.ClientMemberships);
             const services = await getServicesByServiceId(membership.ProductId, getStoredUserToken() ?? undefined);
             const service = services?.Services[0];
             const expirationDate = new Date(membership.ExpirationDate);
@@ -41,6 +48,7 @@ export default function HomeScreen() {
             console.log("Token:", getStoredUserToken());
             console.log("ServiceName", service?.Name);
             setServiceName(service?.Name ?? null);
+            setServiceCount(membership.Count ?? null);
             //setIdServiceName(membership.ProductId ?? null);
           }
         } catch (error) {
@@ -58,11 +66,6 @@ export default function HomeScreen() {
     instructor: "María González",
     time: "16:30",
     date: "Hoy"
-  };
-
-  const stats = {
-    classesTaken: 12,
-    daysLeft: 18,
   };
 
   const recommended = [
@@ -96,8 +99,8 @@ export default function HomeScreen() {
         {/* Stats */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{stats.classesTaken}</Text>
-            <Text style={styles.statLabel}>Clases tomadas</Text>
+            <Text style={styles.statNumber}>{serviceCount != null && serviceCount > 1000 ? "Ilimitadas" : serviceCount}</Text>
+            <Text style={styles.statLabel}>Clases restantes</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>{daysLeft}</Text>
