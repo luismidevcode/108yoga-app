@@ -1,9 +1,9 @@
 
 import { mindbodyFetch } from './mindBodyConfig';
 
-export function getClassesOfWeek(startDate: Date, endDate: Date) {
+export function getClassesOfWeek(startDate: Date, endDate: Date, hideCanceledClasses: boolean = true) {
   return mindbodyFetch(
-    `class/classes?startDateTime=${encodeURIComponent(startDate.toISOString())}&endDateTime=${encodeURIComponent(endDate.toISOString())}`,
+    `class/classes?startDateTime=${encodeURIComponent(startDate.toISOString())}&endDateTime=${encodeURIComponent(endDate.toISOString())}&hideCanceledClasses=${hideCanceledClasses }`,
     {}
   );
 }
@@ -30,3 +30,15 @@ export async function addClientToClass(
     }
   }, 'POST');
 }       
+
+export async function cancelClientFromClass(classId: number, clientId: string) {
+  return mindbodyFetch(
+    `/class/removeclientfromclass`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ ClassId: classId, ClientId: clientId }),
+      headers: { 'Content-Type': 'application/json' },
+    },
+    'POST'
+  );
+}

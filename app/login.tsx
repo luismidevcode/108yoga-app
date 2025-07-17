@@ -93,6 +93,15 @@ export default function SignInScreen() {
         return;
       }
       setClientData(clients[0]); // Guarda el cliente para usarlo después del OTP
+
+      // BYPASS OTP para pruebas con correo específico
+      if (email === 'luismiguelbotero2327@gmail.com') {
+        await saveUser(clients[0]);
+        setLoading(false);
+        router.replace('/(tabs)/home');
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithOtp({ email });
       setLoading(false);
       if (error) {
@@ -173,14 +182,14 @@ export default function SignInScreen() {
             resizeMode="contain"
           />
           {/* Botón de prueba para saltar login */}
-          {__DEV__ && (
+          {/*__DEV__ && (
             <TouchableOpacity
               style={[styles.button, { backgroundColor: '#e53935', marginBottom: 12 }]}
               onPress={() => router.replace('/(tabs)/home')}
             >
               <Text style={[styles.buttonText, { color: '#fff' }]}>Entrar (PRUEBA)</Text>
             </TouchableOpacity>
-          )}
+          )*/}
           {/* Solo muestra el texto si no hay error */}
           {!initError && (
             <>

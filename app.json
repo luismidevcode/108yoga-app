@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "108yoga-app",
-    "slug": "108yoga-app",
+    "name": "108 yoga",
+    "slug": "108yoga",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/ios-light.png",
@@ -14,7 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.luismidevcode.108yoga",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,6 +29,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f2556195-ab41-46f4-85e1-4586496b7d18"
+      }
     }
   }
 }
