@@ -6,13 +6,28 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "experimental": {
+          "newReactNativeArchitecture": false
+        }
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "experimental": {
+          "newReactNativeArchitecture": false
+        }
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "ios": {
+        "experimental": {
+          "newReactNativeArchitecture": false
+        }
+      }
     }
   },
   "submit": {
