@@ -16,7 +16,13 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "andreachehebar@hotmail.com",
+        "ascAppId": "6748842436",
+        "appleTeamId": "ADTVNKNS3D"
+      }
+    }
   }
 }
 
