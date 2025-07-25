@@ -34,9 +34,9 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const fetchMembership = async () => {
-      if (user?.UniqueId) {
+      if (user?.id) {
         try {
-          const memberships = await getMembershipsByClient(String(user?.UniqueId), getStoredUserToken() ?? undefined);
+          const memberships = await getMembershipsByClient(String(user?.id), getStoredUserToken() ?? undefined);
           //setMembershipJson(memberships);
           if (
             memberships?.ClientMemberships?.length > 0 &&

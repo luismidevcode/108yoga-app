@@ -236,11 +236,11 @@ export default function BookingScreen() {
                       if (!user?.UniqueId) return;
                       setReserving(true);
                       try {
-                        await addClientToClass(Number(selectedClass.Id), String(user.UniqueId));
+                        await addClientToClass(Number(selectedClass.Id), String(user.id));
                         setConfirmVisible(false);
                         alert('Reserva realizada con éxito 🎉');
                         // Actualiza el schedule después de reservar
-                        const res = await findClientSchedule(String(user.UniqueId), weekStart, addDays(weekStart, 6));
+                        const res = await findClientSchedule(String(user.id), weekStart, addDays(weekStart, 6));
                         setClientSchedule(res.Visits || []);
                       } catch (err) {
                         alert('Error al reservar esta clase.');
@@ -294,11 +294,11 @@ export default function BookingScreen() {
                       if (!user?.UniqueId) return;
                       setReserving(true);
                       try {
-                        await cancelClientFromClass(Number(selectedClass.Id), String(user.UniqueId));
+                        await cancelClientFromClass(Number(selectedClass.Id), String(user.id));
                         setCancelVisible(false);
                         alert('Reserva cancelada.');
                         // Actualiza el schedule
-                        const res = await findClientSchedule(String(user.UniqueId), weekStart, addDays(weekStart, 6));
+                        const res = await findClientSchedule(String(user.id), weekStart, addDays(weekStart, 6));
                         setClientSchedule(res.Visits || []);
                       } catch {
                         alert('No se pudo cancelar la reserva.');
