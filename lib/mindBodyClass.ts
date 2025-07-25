@@ -1,9 +1,9 @@
 
 import { mindbodyFetch } from './mindBodyConfig';
 
-export function getClassesOfWeek(startDate: Date, endDate: Date, hideCanceledClasses: boolean = true) {
+export function getClassesOfWeek(startDate: Date, endDate: Date, hideCanceledClasses: boolean = true, programIds: number = 23) {
   return mindbodyFetch(
-    `class/classes?startDateTime=${encodeURIComponent(startDate.toISOString())}&endDateTime=${encodeURIComponent(endDate.toISOString())}&hideCanceledClasses=${hideCanceledClasses }`,
+    `class/classes?startDateTime=${encodeURIComponent(startDate.toISOString())}&endDateTime=${encodeURIComponent(endDate.toISOString())}&hideCanceledClasses=${hideCanceledClasses }&programIds=${programIds}`,
     {}
   );
 }
