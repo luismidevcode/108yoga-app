@@ -52,8 +52,7 @@ export default function BookingScreen() {
   // Estado local para controlar si ya se enfocó la clase
   const [hasFocusedClass, setHasFocusedClass] = useState(false);
   const [pendingFocusClassData, setPendingFocusClassData] = useState<any>(null);
-  
-    
+  const [shouldScrollToFirstClass, setShouldScrollToFirstClass] = useState(false);
 
 
   const fetchWeekClasses = async (start: Date) => {
@@ -70,6 +69,25 @@ export default function BookingScreen() {
     }
   };
 
+  useFocusEffect(
+  React.useCallback(() => {
+    setShouldScrollToFirstClass(true);
+  }, [])
+);
+
+  useFocusEffect(
+  React.useCallback(() => {
+    if (user?.id) {
+      const start = weekStart;
+      const end = addDays(weekStart, 6);
+      findClientSchedule(String(user.id), start, end)
+        .then(res => {
+          setClientSchedule(res.Visits || []);
+        })
+        .catch(() => setClientSchedule([]));
+    }
+  }, [user?.id, weekStart])
+);
 
   // Efecto para seleccionar el día y hacer scroll si viene focusClassId
   useEffect(() => {
@@ -78,10 +96,10 @@ export default function BookingScreen() {
 
 
   useEffect(() => {
-    if (user?.UniqueId) {
+    if (user?.id) {
       const start = weekStart
       const end = addDays(weekStart, 6);
-      findClientSchedule(String(user.UniqueId), start, end).then(res => {
+      findClientSchedule(String(user.id), start, end).then(res => {
         //console.log('Reservas de cliente para semana:', start.toISOString(), end.toISOString(), res);
         setClientSchedule(res.Visits || []);
       }).catch(() => setClientSchedule([]));
@@ -114,21 +132,24 @@ export default function BookingScreen() {
     const diffMinutes = (start.getTime() - now.getTime()) / (1000 * 60);
     return !(diffMinutes < 0 || diffMinutes < -20);
   });
+  useEffect(() => {
+  setShouldScrollToFirstClass(true);
+}, [selectedDay]);
 
   // Efecto para hacer scroll automático a la primera clase habilitada
-  useEffect(() => {
-    // Si focusClassId está presente y no se ha enfocado, no hacer scroll automático aquí
-    if (!hasFocusedClass) return;
-    if (scrollRef.current) {
-      setTimeout(() => {
-        if (firstEnabledIndex > 0) {
-          scrollRef.current?.scrollTo({ y: firstEnabledIndex * 100, animated: true });
-        } else {
-          scrollRef.current?.scrollTo({ y: 0, animated: true });
-        }
-      }, 300);
+useEffect(() => {
+  if (!shouldScrollToFirstClass || !scrollRef.current) return;
+
+  setTimeout(() => {
+    if (firstEnabledIndex > 0) {
+      scrollRef.current?.scrollTo({ y: firstEnabledIndex * 100, animated: true });
+    } else {
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
     }
-  }, [availableClasses.length, selectedDay, firstEnabledIndex,  hasFocusedClass]);
+    setShouldScrollToFirstClass(false); // Evita scrolls innecesarios
+  }, 300);
+}, [shouldScrollToFirstClass, availableClasses.length, firstEnabledIndex, selectedDay, hasFocusedClass]);
+
 
 
   // Helper para saber si el usuario tiene reservada la clase
