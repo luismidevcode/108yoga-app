@@ -2,7 +2,7 @@
   "expo": {
     "name": "108 yoga",
     "slug": "108yoga",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/ios-light.png",
     "scheme": "app108yoga",
@@ -16,6 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.luismidevcode.108yoga",
+      "buildNumber": "2",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -34,6 +35,12 @@
       "eas": {
         "projectId": "f2556195-ab41-46f4-85e1-4586496b7d18"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f2556195-ab41-46f4-85e1-4586496b7d18"
     }
   }
 }
