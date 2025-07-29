@@ -80,12 +80,12 @@ export default function HomeScreen() {
 
 
   const fetchNextReservation = useCallback(async () => {
-    if (user?.UniqueId) {
+    if (user?.id) {
       try {
         const start = new Date();
         const end = new Date();
         end.setDate(end.getDate() + 14);
-        const res = await findClientSchedule(String(user.UniqueId), start, end);
+        const res = await findClientSchedule(String(user.id), start, end);
         const visits = res?.Visits || [];
         const now = new Date();
         const futureVisits = visits
@@ -141,7 +141,7 @@ export default function HomeScreen() {
         {/* Hero */}
         <View style={styles.hero}>
           <Text style={styles.title}>Namaste, {user?.FirstName ?? 'Yogi'}</Text>
-          <Text style={styles.subtitle}>¡ Bienvenido a tu espacio de bienestar !</Text>
+          <Text style={styles.subtitle}>¡Bienvenido a tu espacio de bienestar!</Text>
         </View>
 
         {/* Próxima reserva */}
