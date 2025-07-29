@@ -6,6 +6,7 @@ import { findClientSchedule } from '../../lib/mindBodyClients';
 import { useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
+import { getMembershipsByClient } from '../../lib/mindBodyMemberships';
 
 const weekDays = [
   { label: 'Dom', value: 0 },
@@ -53,6 +54,7 @@ export default function BookingScreen() {
   const [hasFocusedClass, setHasFocusedClass] = useState(false);
   const [pendingFocusClassData, setPendingFocusClassData] = useState<any>(null);
   const [shouldScrollToFirstClass, setShouldScrollToFirstClass] = useState(false);
+  const [memberships, setMemberships] = useState<any[]>([]); // Nuevo estado para membresías
 
 
   const fetchWeekClasses = async (start: Date) => {
@@ -159,6 +161,21 @@ useEffect(() => {
     return visits.some((v: any) => String(v.ClassId) === String(classId));
   };
 
+  //Busca las membresías del usuario
+  useEffect(() => {
+  if (user?.id) {
+    getMembershipsByClient(String(user.id))
+      .then((res) => {
+        setMemberships(res.Memberships || []);
+      })
+      .catch(() => setMemberships([]));
+  }
+}, [user?.id]);
+
+const hasActiveMembership = () => {
+  return Array.isArray(memberships) && memberships.length > 0;
+};
+
   return (
     <View style={styles.bg}>
       {/* Modal de información de clase */}
@@ -206,6 +223,10 @@ useEffect(() => {
                     <TouchableOpacity
                       style={styles.reserveBtn}
                       onPress={() => {
+                        if (!hasActiveMembership()) {
+                          alert('Necesitas un plan activo para reservar una clase.');
+                          return;
+                        }
                         setInfoVisible(false);
                         setSelectedClass(infoClass);
                         setConfirmVisible(true);
@@ -447,6 +468,10 @@ useEffect(() => {
                       onPress={(e) => {
                         e.stopPropagation?.();
                         setSelectedClass(item);
+                        if (!hasActiveMembership()) {
+                          alert('Necesitas un plan activo para reservar una clase.');
+                          return;
+                        }
                         if (diffMinutes < 0) {
                           alert('No puedes reservar esta clase porque ya ha comenzado.');
                           return;
