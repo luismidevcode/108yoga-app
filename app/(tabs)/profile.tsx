@@ -27,7 +27,7 @@ export default function ProfileScreen() {
       if (user?.id) {
         try {
           const memberships = await getMembershipsByClient(String(user?.id), getStoredUserToken() ?? undefined);
-          if (memberships?.ClientMemberships?.length > 0) {
+          if (memberships?.ClientMemberships?.length > 0 && memberships.ClientMemberships[0].Memberships?.length > 0) {
             const membership = memberships.ClientMemberships[0].Memberships[0];
             setMembershipsJson(memberships);
             const services = await getServicesByServiceId(membership.ProductId, getStoredUserToken() ?? undefined);
