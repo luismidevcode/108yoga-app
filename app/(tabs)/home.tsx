@@ -65,8 +65,8 @@ export default function HomeScreen() {
               console.log("Token:", getStoredUserToken());
               console.log("ServiceName", service?.Name);
               setServiceName(service?.Name ?? null);
-              setServiceCount(membership.Count ?? null);
-              //setIdServiceName(membership.ProductId ?? null);
+              setServiceCount(membership.Remaining ?? null);
+              //setIdServiceName(membership.ProductId ?? null); 
             }
           }
         } catch (error) {
@@ -141,7 +141,7 @@ export default function HomeScreen() {
         {/* Hero */}
         <View style={styles.hero}>
           <Text style={styles.title}>Namaste, {user?.FirstName ?? 'Yogi'}</Text>
-          <Text style={styles.subtitle}>¡Bienvenido a tu espacio de bienestar!</Text>
+          <Text style={styles.subtitle}>¡ Bienvenido a tu espacio de bienestar !</Text>
         </View>
 
         {/* Próxima reserva */}
