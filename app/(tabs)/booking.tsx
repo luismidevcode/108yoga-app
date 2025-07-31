@@ -7,6 +7,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { getMembershipsByClient } from '../../lib/mindBodyMemberships';
+import { getStoredUserToken } from '../../lib/mindBodyUserToken';
 
 const weekDays = [
   { label: 'Dom', value: 0 },
@@ -161,21 +162,32 @@ useEffect(() => {
     return visits.some((v: any) => String(v.ClassId) === String(classId));
   };
 
-  //Busca las membresías del usuario
   useEffect(() => {
-  if (user?.id) {
-    getMembershipsByClient(String(user.id))
-      .then((res) => {
-        setMemberships(res.Memberships || []);
-      })
-      .catch(() => setMemberships([]));
-  }
-}, [user?.id]);
+    const fetchMembership = async () => {
+      if (user?.id) {
+        try {
+          const memberships = await getMembershipsByClient(String(user?.id), getStoredUserToken() ?? undefined);
+          if (memberships?.ClientMemberships?.length > 0 && memberships.ClientMemberships[0].Memberships?.length > 0) {
+            const membership = memberships.ClientMemberships[0].Memberships[0];
+            setMemberships(memberships.ClientMemberships[0].Memberships);
+            console.log('Active membership:', membership);
+          } else {
+            setMemberships([]);
+          }
+        } catch (error) {
+          console.error('Error fetching memberships:', error);
+        }
+      }
+    };
+
+    fetchMembership();
+  }, [user?.id]);
+
 
 const hasActiveMembership = () => {
   return Array.isArray(memberships) && memberships.length > 0;
+  
 };
-
   return (
     <View style={styles.bg}>
       {/* Modal de información de clase */}
