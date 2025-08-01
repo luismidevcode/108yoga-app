@@ -58,8 +58,10 @@ export default function BookingScreen() {
   const [memberships, setMemberships] = useState<any[]>([]); // Nuevo estado para membresías
 
 
-  const fetchWeekClasses = async (start: Date) => {
+  const fetchWeekClasses = async (
+    start: Date) => {
     const end = addDays(start, 6);
+    end.setHours(18, 0, 0, 0);
     setLoading(true);
     try {
       const res = await getClassesOfWeek(start, end);
@@ -83,6 +85,7 @@ export default function BookingScreen() {
     if (user?.id) {
       const start = weekStart;
       const end = addDays(weekStart, 6);
+      end.setHours(18, 0, 0, 0);
       findClientSchedule(String(user.id), start, end)
         .then(res => {
           setClientSchedule(res.Visits || []);
@@ -100,10 +103,12 @@ export default function BookingScreen() {
 
   useEffect(() => {
     if (user?.id) {
-      const start = weekStart
+      const start = weekStart;
       const end = addDays(weekStart, 6);
+      // Ajusta la hora de end a las 23:00:00
+      end.setHours(18, 0, 0, 0);
       findClientSchedule(String(user.id), start, end).then(res => {
-        //console.log('Reservas de cliente para semana:', start.toISOString(), end.toISOString(), res);
+       // console.log('Reservas de cliente para semana:', start.toISOString(), end.toISOString(), res);
         setClientSchedule(res.Visits || []);
       }).catch(() => setClientSchedule([]));
     }
