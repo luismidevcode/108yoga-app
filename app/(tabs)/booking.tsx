@@ -85,9 +85,11 @@ export default function BookingScreen() {
     if (user?.id) {
       const start = weekStart;
       const end = addDays(weekStart, 6);
-      end.setHours(18, 0, 0, 0);
+      end.setHours(23, 59, 59, 999); // Cambiado para incluir todo el día
+      console.log('useFocusEffect - Buscando reservas desde:', start.toISOString(), 'hasta:', end.toISOString());
       findClientSchedule(String(user.id), start, end)
         .then(res => {
+          console.log('useFocusEffect - Reservas encontradas:', res.Visits?.length || 0, res.Visits);
           setClientSchedule(res.Visits || []);
         })
         .catch(() => setClientSchedule([]));
@@ -105,10 +107,15 @@ export default function BookingScreen() {
     if (user?.id) {
       const start = weekStart;
       const end = addDays(weekStart, 6);
-      // Ajusta la hora de end a las 23:00:00
-      end.setHours(18, 0, 0, 0);
+      // Cambiado para incluir todo el día hasta las 23:59
+      end.setHours(23, 59, 59, 999);
+      console.log('useEffect - Buscando reservas desde:', start.toISOString(), 'hasta:', end.toISOString());
       findClientSchedule(String(user.id), start, end).then(res => {
-       // console.log('Reservas de cliente para semana:', start.toISOString(), end.toISOString(), res);
+        console.log('useEffect - Reservas encontradas:', res.Visits?.length || 0, res.Visits?.map((v: any) => ({
+          ClassId: v.ClassId,
+          StartDateTime: v.StartDateTime,
+          dayOfWeek: new Date(v.StartDateTime).getDay()
+        })));
         setClientSchedule(res.Visits || []);
       }).catch(() => setClientSchedule([]));
     }
@@ -164,7 +171,21 @@ useEffect(() => {
   const isClassReserved = (classId: number) => {
     // Si clientSchedule tiene Visits, úsalo; si es array, úsalo directo
     const visits = Array.isArray(clientSchedule) ? clientSchedule : (clientSchedule || []);
-    return visits.some((v: any) => String(v.ClassId) === String(classId));
+    const isReserved = visits.some((v: any) => String(v.ClassId) === String(classId));
+    
+    // Debug específico para sábados
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    if (dayOfWeek === 6) { // Si es sábado
+      console.log(`SÁBADO - isClassReserved para clase ${classId}:`, {
+        classId,
+        isReserved,
+        totalVisits: visits.length,
+        visits: visits.map((v: any) => ({ ClassId: v.ClassId, StartDateTime: v.StartDateTime }))
+      });
+    }
+    
+    return isReserved;
   };
 
   useEffect(() => {
@@ -299,7 +320,12 @@ const hasActiveMembership = () => {
                         setConfirmVisible(false);
                         alert('Reserva realizada con éxito 🎉');
                         // Actualiza el schedule después de reservar
-                        const res = await findClientSchedule(String(user.id), weekStart, addDays(weekStart, 6));
+                        const start = weekStart;
+                        const end = addDays(weekStart, 6);
+                        end.setHours(23, 59, 59, 999); // Asegurar que incluya todo el día
+                        console.log('Después de reservar - Actualizando schedule desde:', start.toISOString(), 'hasta:', end.toISOString());
+                        const res = await findClientSchedule(String(user.id), start, end);
+                        console.log('Después de reservar - Nuevas reservas:', res.Visits?.length || 0, res.Visits);
                         setClientSchedule(res.Visits || []);
                       } catch (err) {
                         alert('Error al reservar esta clase.');
@@ -357,7 +383,12 @@ const hasActiveMembership = () => {
                         setCancelVisible(false);
                         alert('Reserva cancelada.');
                         // Actualiza el schedule
-                        const res = await findClientSchedule(String(user.id), weekStart, addDays(weekStart, 6));
+                        const start = weekStart;
+                        const end = addDays(weekStart, 6);
+                        end.setHours(23, 59, 59, 999); // Asegurar que incluya todo el día
+                        console.log('Después de cancelar - Actualizando schedule desde:', start.toISOString(), 'hasta:', end.toISOString());
+                        const res = await findClientSchedule(String(user.id), start, end);
+                        console.log('Después de cancelar - Nuevas reservas:', res.Visits?.length || 0, res.Visits);
                         setClientSchedule(res.Visits || []);
                       } catch {
                         alert('No se pudo cancelar la reserva.');
@@ -443,6 +474,21 @@ const hasActiveMembership = () => {
           const diffMinutes = (start.getTime() - now.getTime()) / (1000 * 60);
           const isPast = diffMinutes < 0 || diffMinutes < -20;
           const reserved = isClassReserved(item.Id);
+          
+          // Debug específico para sábados
+          const dayOfWeek = start.getDay(); // 0 = domingo, 6 = sábado
+          if (dayOfWeek === 6) { // Si es sábado
+            console.log(`SÁBADO - Renderizando clase ${item.Id}:`, {
+              className: item.ClassDescription?.Name,
+              startDateTime: item.StartDateTime,
+              classId: item.Id,
+              reserved,
+              isPast,
+              diffMinutes,
+              dayOfWeek
+            });
+          }
+          
           return (
             <Pressable
               key={idx}
