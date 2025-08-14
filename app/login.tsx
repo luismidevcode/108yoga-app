@@ -95,7 +95,7 @@ export default function SignInScreen() {
       setClientData(clients[0]); // Guarda el cliente para usarlo después del OTP
 
       // BYPASS OTP para pruebas con correo específico
-      if (email === 'luismiguelbotero2327@gmail.com') {
+      if (email === 'luismiguelbotero2327@gmail.com' || email === 'mariasolcorrea@gmail.com') {
         await saveUser(clients[0]);
         setLoading(false);
         router.replace('/(tabs)/home');

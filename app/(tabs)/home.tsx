@@ -1,10 +1,10 @@
 import { Tabs } from 'expo-router';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, use} from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions, Modal, ActivityIndicator, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUser } from '../../context/UserContext';
 import { useFocusEffect } from '@react-navigation/native';
-import { getMembershipsByClient } from '../../lib/mindBodyMemberships';
+import { getMembershipsByClient, getPurchasesByClient } from '../../lib/mindBodyMemberships';
 import { getServicesByServiceId } from '../../lib/mindBodyServices';
 import { getStoredUserToken } from '../../lib/mindBodyUserToken';
 import { getClassesOfWeek, cancelClientFromClass } from '../../lib/mindBodyClass';
@@ -31,6 +31,77 @@ export default function HomeScreen() {
   // Estado para modal de info/cancelar
   const [infoVisible, setInfoVisible] = useState(false);
   const [reserving, setReserving] = useState(false);
+
+useEffect(() => {
+  const fetchActiveServices = async () => {
+    if (user?.id) {
+      try {
+        // Usar las fechas predefinidas (1 año y 1 mes atrás hasta hoy)
+        const purchases = await getPurchasesByClient(String(user?.id));
+        const currentDate = new Date();
+
+        // 1. Filtrar solo compras con servicios
+        const services = purchases.Purchases.filter((p: any) =>
+          Array.isArray(p.Sale.PurchasedItems) &&
+          p.Sale.PurchasedItems.some((item: any) => item.IsService)
+        );
+
+        // 2. Filtrar solo servicios activos (no expirados)
+        const activeServices = services.filter((service: any) => {
+          const serviceItem = service.Sale.PurchasedItems.find(
+            (item: any) => item.IsService
+          );
+          if (serviceItem && serviceItem.ExpDate) {
+            const expDate = new Date(serviceItem.ExpDate);
+            return expDate > currentDate; // Solo servicios no expirados
+          }
+          return false;
+        });
+
+        // 3. Ordenar por fecha de expiración (más próximo a expirar primero)
+        activeServices.sort((a: any, b: any) => {
+          const expDateA = new Date(a.Sale.PurchasedItems.find((item: any) => item.IsService).ExpDate);
+          const expDateB = new Date(b.Sale.PurchasedItems.find((item: any) => item.IsService).ExpDate);
+          return expDateA.getTime() - expDateB.getTime();
+        });
+
+        console.log(`Servicios activos encontrados: ${activeServices.length}`);
+
+        // 4. Mostrar información de todos los servicios activos
+        if (activeServices.length > 0) {
+          activeServices.forEach((service: any, index: number) => {
+            const serviceItem = service.Sale.PurchasedItems.find(
+              (item: any) => item.IsService
+            );
+            
+            const expDate = new Date(serviceItem.ExpDate);
+            const daysUntilExpiration = Math.ceil(
+              (expDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
+            );
+
+            console.log(`Servicio activo ${index + 1}:`, {
+              id: service.Sale.Id,
+              descripcion: serviceItem.Description,
+              fechaVenta: service.Sale.SaleDate,
+              expira: serviceItem.ExpDate,
+              diasParaExpirar: daysUntilExpiration
+            });
+            setServiceName(serviceItem?.Description ?? null);
+          });
+          
+        } else {
+          console.log("No se encontraron servicios activos para este cliente.");
+        }
+      } catch (error) {
+        console.error("Error fetching active services:", error);
+      }
+    }
+  };
+
+  fetchActiveServices();
+}, [user]);
+
+
 
   useEffect(() => {
     const fetchMembership = async () => {
@@ -64,7 +135,7 @@ export default function HomeScreen() {
               console.log("Service fetched:", service);
               console.log("Token:", getStoredUserToken());
               console.log("ServiceName", service?.Name);
-              setServiceName(service?.Name ?? null);
+              //setServiceName(service?.Name ?? null);
               setServiceCount(membership.Remaining ?? null);
               //setIdServiceName(membership.ProductId ?? null); 
             }

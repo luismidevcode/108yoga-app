@@ -6,7 +6,7 @@ import { findClientSchedule } from '../../lib/mindBodyClients';
 import { useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
-import { getMembershipsByClient } from '../../lib/mindBodyMemberships';
+import { getMembershipsByClient, getPurchasesByClient } from '../../lib/mindBodyMemberships';
 import { getStoredUserToken } from '../../lib/mindBodyUserToken';
 
 const weekDays = [
@@ -55,7 +55,7 @@ export default function BookingScreen() {
   const [hasFocusedClass, setHasFocusedClass] = useState(false);
   const [pendingFocusClassData, setPendingFocusClassData] = useState<any>(null);
   const [shouldScrollToFirstClass, setShouldScrollToFirstClass] = useState(false);
-  const [memberships, setMemberships] = useState<any[]>([]); // Nuevo estado para membresías
+  const [activeServices, setActiveServices] = useState<any[]>([]); // Estado para servicios activos
 
 
   const fetchWeekClasses = async (
@@ -189,30 +189,79 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    const fetchMembership = async () => {
+    const fetchActiveServices = async () => {
       if (user?.id) {
         try {
-          const memberships = await getMembershipsByClient(String(user?.id), getStoredUserToken() ?? undefined);
-          if (memberships?.ClientMemberships?.length > 0 && memberships.ClientMemberships[0].Memberships?.length > 0) {
-            const membership = memberships.ClientMemberships[0].Memberships[0];
-            setMemberships(memberships.ClientMemberships[0].Memberships);
-            console.log('Active membership:', membership);
+          // Usar las fechas predefinidas (1 año y 1 mes atrás hasta hoy)
+          const purchases = await getPurchasesByClient(String(user?.id));
+          const currentDate = new Date();
+  
+          // 1. Filtrar solo compras con servicios
+          const services = purchases.Purchases.filter((p: any) =>
+            Array.isArray(p.Sale.PurchasedItems) &&
+            p.Sale.PurchasedItems.some((item: any) => item.IsService)
+          );
+  
+          // 2. Filtrar solo servicios activos (no expirados)
+          const activeServicesFound = services.filter((service: any) => {
+            const serviceItem = service.Sale.PurchasedItems.find(
+              (item: any) => item.IsService
+            );
+            if (serviceItem && serviceItem.ExpDate) {
+              const expDate = new Date(serviceItem.ExpDate);
+              return expDate > currentDate; // Solo servicios no expirados
+            }
+            return false;
+          });
+  
+          // 3. Ordenar por fecha de expiración (más próximo a expirar primero)
+          activeServicesFound.sort((a: any, b: any) => {
+            const expDateA = new Date(a.Sale.PurchasedItems.find((item: any) => item.IsService).ExpDate);
+            const expDateB = new Date(b.Sale.PurchasedItems.find((item: any) => item.IsService).ExpDate);
+            return expDateA.getTime() - expDateB.getTime();
+          });
+
+          // Guardar servicios activos en el estado
+          setActiveServices(activeServicesFound);
+  
+          console.log(`Servicios activos encontrados: ${activeServicesFound.length}`);
+  
+          // 4. Mostrar información de todos los servicios activos
+          if (activeServicesFound.length > 0) {
+            activeServicesFound.forEach((service: any, index: number) => {
+              const serviceItem = service.Sale.PurchasedItems.find(
+                (item: any) => item.IsService
+              );
+              
+              const expDate = new Date(serviceItem.ExpDate);
+              const daysUntilExpiration = Math.ceil(
+                (expDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
+              );
+  
+              console.log(`Servicio activo ${index + 1}:`, {
+                id: service.Sale.Id,
+                descripcion: serviceItem.Description,
+                fechaVenta: service.Sale.SaleDate,
+                expira: serviceItem.ExpDate,
+                diasParaExpirar: daysUntilExpiration
+              });
+            });
           } else {
-            setMemberships([]);
+            console.log("No se encontraron servicios activos para este cliente.");
           }
         } catch (error) {
-          console.error('Error fetching memberships:', error);
+          console.error("Error fetching active services:", error);
+          setActiveServices([]);
         }
       }
     };
-
-    fetchMembership();
-  }, [user?.id]);
+  
+    fetchActiveServices();
+  }, [user]);
 
 
 const hasActiveMembership = () => {
-  return Array.isArray(memberships) && memberships.length > 0;
-  
+  return Array.isArray(activeServices) && activeServices.length > 0;
 };
   return (
     <View style={styles.bg}>
